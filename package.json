@@ -25,6 +25,7 @@
     "@prisma/client": "^6.14.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
@@ -34,10 +35,6 @@
     "typescript": "^5"
   },
   "prisma": {
-  "seed": "node --env-file=.env prisma/seed.mjs"
+    "seed": "node --env-file=.env prisma/seed.mjs"
+  }
 }
-
-  
-}
-
-
