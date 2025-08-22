@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 type Service = { id: string; name: string; depositPence: number; durationMin: number }
 type Slot = string
+type CheckoutResponse = { checkoutUrl?: string; error?: string }
 
 export default function BookingPage() {
   const [services, setServices] = useState<Service[]>([])
@@ -17,11 +18,8 @@ export default function BookingPage() {
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
 
-  useEffect(() => {
-    // tiny fetch for services (we’ll expose via a simple route below)
-    fetch('/api/services')
-      .then(r => r.json())
-      .then(data => setServices(data.services))
+    useEffect(() => {
+    fetch('/api/services').then(r => r.json()).then(data => setServices(data.services as Service[]))
   }, [])
 
   async function loadSlots() {
@@ -48,8 +46,8 @@ export default function BookingPage() {
     })
 
     const text = await r.text()
-    let j: any
-    try { j = JSON.parse(text) } catch { j = { error: text || 'Invalid server response' } }
+    let j: CheckoutResponse
+    try { j = JSON.parse(text) as CheckoutResponse } catch { j = { error: text || 'Invalid server response' } }
 
     if (r.ok && j.checkoutUrl) window.location.href = j.checkoutUrl
     else alert(j.error || 'Something went wrong')

@@ -89,10 +89,14 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json({ checkoutUrl: session.url })
-  } catch (err: any) {
+  } catch (err: unknown) {
+    let message = 'Server error creating checkout session.'
+    if (typeof err === 'object' && err && 'message' in err) message = String((err as { message?: unknown }).message)
+    // Stripe error objects sometimes have "raw" with a message
+    if (typeof err === 'object' && err && 'raw' in err && (err as { raw?: { message?: string } }).raw?.message) {
+      message = (err as { raw: { message: string } }).raw.message
+    }
     console.error('Checkout error:', err)
-    const message =
-      err?.raw?.message || err?.message || 'Server error creating checkout session.'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
