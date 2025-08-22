@@ -1,34 +1,17 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { verifyAdminToken } from './src/lib/adminAuth'
 
-export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl
+export function middleware(req: NextRequest) {
+  if (!req.nextUrl.pathname.startsWith('/admin')) return NextResponse.next()
+  if (req.nextUrl.pathname === '/admin/login') return NextResponse.next()
 
-  const isAdminPath =
-    pathname.startsWith('/admin') && pathname !== '/admin/login'
-  const isAdminApi = pathname.startsWith('/api/admin')
-
-  if (!isAdminPath && !isAdminApi) return NextResponse.next()
-
-  const token = req.cookies.get('admin_token')?.value
-  if (!token) {
-    const url = req.nextUrl.clone()
-    url.pathname = '/admin/login'
-    url.searchParams.set('next', pathname)
+  const hasToken = Boolean(req.cookies.get('sb-access-token'))
+  if (!hasToken) {
+    const url = new URL('/admin/login', req.url)
+    url.searchParams.set('redirect', req.nextUrl.pathname + req.nextUrl.search)
     return NextResponse.redirect(url)
   }
-
-  try {
-    await verifyAdminToken(token)
-    return NextResponse.next()
-  } catch {
-    const url = req.nextUrl.clone()
-    url.pathname = '/admin/login'
-    return NextResponse.redirect(url)
-  }
+  return NextResponse.next()
 }
 
-export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
-}
+export const config = { matcher: ['/admin/:path*'] }
