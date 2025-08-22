@@ -1,30 +1,32 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import ReschedButton from '@/components/admin/reschedButton'
-import type { Prisma } from '@prisma/client'
+import ReschedButton from '@/components/admin/ReschedButton'
 
-type Props = {
-  searchParams: {
-    status?: 'pending' | 'confirmed' | 'cancelled'
-    from?: string
-    to?: string
-    service?: string
-  }
+type AdminSearchParams = {
+  status?: 'pending' | 'confirmed' | 'cancelled'
+  from?: string
+  to?: string
+  service?: string
 }
 
-export default async function AdminAppointments({ searchParams }: Props) {
+export default async function AdminAppointments({
+  searchParams,
+}: {
+  // ✅ Next 15 expects a Promise here
+  searchParams: Promise<AdminSearchParams>
+}) {
+  const sp = await searchParams
+
   // Build Prisma where clause from query params
-  
-  const where: Prisma.AppointmentWhereInput = {}
-  if (searchParams.status) where.status = searchParams.status
-  if (searchParams.service) where.serviceId = searchParams.service
-  if (searchParams.from || searchParams.to) {
+  const where: any = {}
+  if (sp.status) where.status = sp.status
+  if (sp.service) where.serviceId = sp.service
+  if (sp.from || sp.to) {
     where.startsAt = {}
-    if (searchParams.from) where.startsAt.gte = new Date(searchParams.from)
-    if (searchParams.to) {
-      // include the whole "to" day
-      const to = new Date(searchParams.to)
-      to.setHours(23, 59, 59, 999)
+    if (sp.from) where.startsAt.gte = new Date(sp.from)
+    if (sp.to) {
+      const to = new Date(sp.to)
+      to.setHours(23, 59, 59, 999) // include the whole day
       where.startsAt.lte = to
     }
   }
@@ -47,7 +49,7 @@ export default async function AdminAppointments({ searchParams }: Props) {
       <form className="flex flex-wrap gap-2 mb-4">
         <select
           name="status"
-          defaultValue={searchParams.status || ''}
+          defaultValue={sp.status || ''}
           className="border rounded p-2"
         >
           <option value="">All statuses</option>
@@ -58,7 +60,7 @@ export default async function AdminAppointments({ searchParams }: Props) {
 
         <select
           name="service"
-          defaultValue={searchParams.service || ''}
+          defaultValue={sp.service || ''}
           className="border rounded p-2"
         >
           <option value="">All services</option>
@@ -72,13 +74,13 @@ export default async function AdminAppointments({ searchParams }: Props) {
         <input
           type="date"
           name="from"
-          defaultValue={searchParams.from}
+          defaultValue={sp.from}
           className="border rounded p-2"
         />
         <input
           type="date"
           name="to"
-          defaultValue={searchParams.to}
+          defaultValue={sp.to}
           className="border rounded p-2"
         />
 
