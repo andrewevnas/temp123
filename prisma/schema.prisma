@@ -73,6 +73,7 @@ model Appointment {
   updatedAt DateTime @updatedAt
 
   @@index([startsAt, endsAt])
+  @@index([status, createdAt])     // <-- helps the cron query
 }
 
 model AppointmentAddon {
