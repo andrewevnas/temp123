@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import ReschedButton from '@/components/admin/reschedButton'
+import type { Prisma } from '@prisma/client'
 
 type Props = {
   searchParams: {
@@ -13,7 +14,8 @@ type Props = {
 
 export default async function AdminAppointments({ searchParams }: Props) {
   // Build Prisma where clause from query params
-  const where: any = {}
+  
+  const where: Prisma.AppointmentWhereInput = {}
   if (searchParams.status) where.status = searchParams.status
   if (searchParams.service) where.serviceId = searchParams.service
   if (searchParams.from || searchParams.to) {
