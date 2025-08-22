@@ -18,7 +18,7 @@ export default async function AdminAppointments({
   const sp = await searchParams
 
   // Build Prisma where clause from query params
-  const where: any = {}
+  const where: import('@prisma/client').Prisma.AppointmentWhereInput = {}
   if (sp.status) where.status = sp.status
   if (sp.service) where.serviceId = sp.service
   if (sp.from || sp.to) {
