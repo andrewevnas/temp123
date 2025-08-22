@@ -4,30 +4,35 @@ import { requireAdmin } from '@/lib/admin-guard'
 
 export const runtime = 'nodejs'
 
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+function paramFromPath(pathname: string, marker: string) {
+  const i = pathname.indexOf(`/${marker}/`)
+  if (i === -1) return null
+  const after = pathname.slice(i + marker.length + 2)
+  const seg = after.split('/')[0]
+  return seg ? decodeURIComponent(seg) : null
+}
+
+export async function POST(req: Request) {
   try {
     await requireAdmin()
 
-    const body = (await req.json()) as { startsAtISO?: string }
-    const startsAt = body.startsAtISO ? new Date(body.startsAtISO) : null
+    const id = paramFromPath(new URL(req.url).pathname, 'appointments')
+    if (!id) return NextResponse.json({ error: 'Bad URL' }, { status: 400 })
+
+    const { startsAtISO } = (await req.json()) as { startsAtISO?: string }
+    const startsAt = startsAtISO ? new Date(startsAtISO) : null
     if (!startsAt || Number.isNaN(startsAt.getTime())) {
       return NextResponse.json({ error: 'Bad date' }, { status: 400 })
     }
 
     const appt = await prisma.appointment.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { service: true },
     })
     if (!appt) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    const endsAt = new Date(
-      startsAt.getTime() + appt.service.durationMin * 60_000
-    )
+    const endsAt = new Date(startsAt.getTime() + appt.service.durationMin * 60_000)
 
-    // overlap check
     const clash = await prisma.appointment.findFirst({
       where: {
         id: { not: appt.id },
@@ -48,9 +53,9 @@ export async function POST(
     })
 
     return NextResponse.json({ ok: true })
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Error'
-    const code = message === 'UNAUTHORIZED' ? 401 : 500
-    return NextResponse.json({ error: message }, { status: code })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Error'
+    const code = msg === 'UNAUTHORIZED' ? 401 : 500
+    return NextResponse.json({ error: msg }, { status: code })
   }
 }
