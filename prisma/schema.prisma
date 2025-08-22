@@ -73,7 +73,7 @@ model Appointment {
   updatedAt DateTime @updatedAt
 
   @@index([startsAt, endsAt])
-  @@index([status, createdAt])     // <-- helps the cron query
+  @@index([status, createdAt]) // <-- helps the cron query
 }
 
 model AppointmentAddon {
@@ -107,4 +107,44 @@ enum AppointmentStatus {
   pending
   confirmed
   cancelled
+}
+
+model Look {
+  id          String      @id @default(cuid())
+  title       String
+  category    String? // e.g. "Bridal", "Editorial"
+  date        DateTime    @default(now())
+  description String?
+  images      LookImage[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Testimonial Testimonial[]
+}
+
+model LookImage {
+  id     String @id @default(cuid())
+  look   Look   @relation(fields: [lookId], references: [id], onDelete: Cascade)
+  lookId String
+  url    String
+  sort   Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lookId, sort])
+}
+
+// (Optional, for later Stage 4E)
+model Testimonial {
+  id     String    @id @default(cuid())
+  author String
+  quote  String
+  rating Int?
+  date   DateTime? // when you received it
+  look   Look?     @relation(fields: [lookId], references: [id])
+  lookId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
