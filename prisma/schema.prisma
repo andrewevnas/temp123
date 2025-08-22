@@ -1,0 +1,109 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // use the Session Pooler (IPv4)
+  directUrl = env("DIRECT_URL") // use Direct (IPv6) if you have it, else also pooler
+}
+
+model Service {
+  id             String         @id @default(cuid())
+  name           String
+  slug           String         @unique
+  durationMin    Int
+  basePricePence Int
+  depositPence   Int
+  description    String?
+  active         Boolean        @default(true)
+  addons         ServiceAddon[]
+  appointments   Appointment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ServiceAddon {
+  id               String  @id @default(cuid())
+  service          Service @relation(fields: [serviceId], references: [id])
+  serviceId        String
+  name             String
+  pricePence       Int
+  durationDeltaMin Int     @default(0)
+
+  // 🔧 back-relation to AppointmentAddon (this line fixes your error)
+  appointmentAddons AppointmentAddon[] @relation("AddonOnAppointment")
+}
+
+model AvailabilityRule {
+  id        String @id @default(cuid())
+  weekday   Int // 0=Sun..6=Sat
+  startTime String // "09:00"
+  endTime   String // "17:00"
+
+  @@unique([weekday, startTime, endTime])
+}
+
+model BlackoutDate {
+  id     String   @id @default(cuid())
+  date   DateTime // store UTC midnight for the date
+  reason String?
+}
+
+model Appointment {
+  id           String             @id @default(cuid())
+  service      Service            @relation(fields: [serviceId], references: [id])
+  serviceId    String
+  startsAt     DateTime // UTC
+  endsAt       DateTime // UTC
+  status       AppointmentStatus  @default(pending)
+  customerName String
+  email        String
+  phone        String?
+  notes        String?
+  partySize    Int? // bridal party count etc.
+  venue        String?
+  readyByTime  String? // e.g. "12:30"
+  addons       AppointmentAddon[]
+  payment      Payment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([startsAt, endsAt])
+}
+
+model AppointmentAddon {
+  id            String      @id @default(cuid())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  appointmentId String
+
+  // 🔧 give the relation a name and reference it above
+  addon   ServiceAddon @relation("AddonOnAppointment", fields: [addonId], references: [id])
+  addonId String
+
+  qty Int @default(1)
+}
+
+model Payment {
+  id                  String      @id @default(cuid())
+  appointment         Appointment @relation(fields: [appointmentId], references: [id])
+  appointmentId       String      @unique
+  provider            String // "stripe"
+  amountPence         Int
+  currency            String      @default("GBP")
+  status              String // "paid" | "failed" | "refunded"
+  stripeSessionId     String?
+  stripePaymentIntent String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum AppointmentStatus {
+  pending
+  confirmed
+  cancelled
+}
