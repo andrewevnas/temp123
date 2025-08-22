@@ -10,38 +10,36 @@ function LoginForm() {
   const params = useSearchParams()
 
   const next = params.get('redirect') || '/admin'
-  const site =
-  typeof window !== 'undefined'
-    ? window.location.origin                 // ✅ always correct on whatever domain the user is on
-    : (process.env.NEXT_PUBLIC_SITE_URL || '') // SSR fallback
-    
+  const error = params.get('error')
+
   async function sendMagic() {
+    // ✅ compute the redirect using the domain the user is on
+    const origin =
+      typeof window !== 'undefined'
+        ? window.location.origin
+        : (process.env.NEXT_PUBLIC_SITE_URL || '')
+
+    const redirectTo = new URL('/auth/callback', origin)
+    redirectTo.searchParams.set('next', next)
+
     const supabase = supabaseBrowser()
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        emailRedirectTo: `${site}/auth/callback?next=${encodeURIComponent(next)}`,
-      },
+      options: { emailRedirectTo: redirectTo.toString() },
     })
     if (error) alert(error.message)
     else setSent(true)
   }
-
-  const error = params.get('error')
 
   return (
     <main className="max-w-md mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-4">Admin login</h1>
 
       {error === 'unauthorized' && (
-        <div className="mb-3 text-sm text-red-600">
-          This email isn’t authorized for admin.
-        </div>
+        <div className="mb-3 text-sm text-red-600">This email isn’t authorized for admin.</div>
       )}
       {error === 'link' && (
-        <div className="mb-3 text-sm text-red-600">
-          Login link invalid or expired. Try again.
-        </div>
+        <div className="mb-3 text-sm text-red-600">Login link invalid or expired. Try again.</div>
       )}
 
       {sent ? (
@@ -55,10 +53,7 @@ function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             type="email"
           />
-          <button
-            className="bg-black text-white rounded px-4 py-2"
-            onClick={sendMagic}
-          >
+          <button className="bg-black text-white rounded px-4 py-2" onClick={sendMagic}>
             Send magic link
           </button>
         </>
