@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import ReschedButton from '@/components/admin/ReschedButton'
+import ReschedButton from '@/components/admin/reschedButton'
 
 type AdminSearchParams = {
   status?: 'pending' | 'confirmed' | 'cancelled'
