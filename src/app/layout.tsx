@@ -4,12 +4,12 @@ import Link from 'next/link'
 export const metadata = {
   title: { default: 'Emily — Makeup Artist Belfast', template: '%s | Emily MUA' },
   description:
-    'Luxury yet approachable makeup artist in Belfast for weddings, formals and editorials. Charlotte Tilbury–trained.',
+    'Luxury yet approachable makeup artist in Belfast for weddings, formals & editorials. Charlotte Tilbury–trained.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth">
       <body>
         <SiteHeader />
         <main>{children}</main>
@@ -20,17 +20,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 function SiteHeader() {
+  // anchor links point to homepage sections (work from any route)
   return (
     <header className="bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-40 border-b border-black/5">
       <div className="container-xy h-16 flex items-center justify-between">
         <Link href="/" className="font-display text-lg">Emily MUA</Link>
         <nav className="hidden sm:flex gap-6 text-sm">
+          <Link href="/#about">About</Link>
+          <Link href="/#testimonials">Testimonials</Link>
+          <Link href="/#contact">Contact</Link>
           <Link href="/services">Services</Link>
-          <Link href="/portfolio">Portfolio</Link>
-          <Link href="/about">About</Link>
-          <Link href="/contact">Contact</Link>
         </nav>
-        <Link href="/booking" className="btn btn-primary">Book now</Link>
+        <Link href="/booking" className="btn btn-primary">Book</Link>
       </div>
     </header>
   )
@@ -44,7 +45,7 @@ function SiteFooter() {
         <div className="flex gap-5">
           <Link href="/privacy" className="subtle">Privacy</Link>
           <Link href="/terms" className="subtle">Terms</Link>
-          <a href="/booking" className="btn btn-ghost">Book now</a>
+          <Link href="/services" className="subtle">Services</Link>
         </div>
       </div>
     </footer>

@@ -1,84 +1,95 @@
 import Link from 'next/link'
+import BannerHero from '@/components/public/BannerHero'
+import ContactSection from '@/components/public/ContactSection'
+import { prisma } from '@/lib/prisma'
 import Image from 'next/image'
 
-export default function HomePage() {
+export default async function HomePage() {
+  // grab a few services for the home grid
+  const services = await prisma.service.findMany({
+    where: { active: true },
+    orderBy: { name: 'asc' },
+    take: 6,
+    select: { id: true, name: true, durationMin: true, depositPence: true },
+  })
+
   return (
     <>
-      {/* Hero */}
-      <section className="section">
-        <div className="grid lg:grid-cols-2 gap-8 items-center">
-          <div>
-            <h1 className="h1 mb-4">Luxury glam with a personal touch.</h1>
-            <p className="text-base text-ink/80 mb-6">
-              Belfast’s trusted, home-grown makeup artist for weddings, formals & special occasions.
-              Trained with Charlotte Tilbury. Mobile on request.
-            </p>
-            <div className="flex gap-3">
-              <Link href="/booking" className="btn btn-primary">Book an appointment</Link>
-              <Link href="/portfolio" className="btn btn-ghost">See portfolio</Link>
-            </div>
-          </div>
+      <BannerHero />
 
-          <div className="card overflow-hidden">
-            <Image
-              src="/images/hero-placeholder.jpg" /* replace when you have a real shot */
-              alt="Signature bridal glam"
-              width={1200}
-              height={900}
-              priority
-              className="w-full h-auto object-cover"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Why book Emily */}
+      {/* Services (clickable cards → booking with service preselected) */}
       <section className="section">
-        <div className="mb-6">
-          <h2 className="h2">Why book Emily</h2>
-          <p className="subtle mt-1">Modern glam that still looks like you — long-lasting, photo-ready.</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6">
-          {[
-            { title: 'Bridal & events expert', body: 'Hundreds of happy clients; timings down to a tee.' },
-            { title: 'Charlotte Tilbury trained', body: '3 years on the CT Belfast team. Skin-first prep, flattering finish.' },
-            { title: 'Studio & mobile', body: 'Home studio in Belfast with travel options for weddings & shoots.' },
-          ].map((f) => (
-            <div key={f.title} className="card p-5">
-              <h3 className="font-medium mb-1">{f.title}</h3>
-              <p className="subtle">{f.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Services preview */}
-      <section className="section">
-        <div className="mb-6 flex items-end justify-between">
+        <div className="mb-4 sm:mb-6 flex items-end justify-between">
           <div>
             <h2 className="h2">Popular services</h2>
-            <p className="subtle">Bridal, special occasion, editorial & lessons.</p>
+            <p className="subtle">Tap a card to book instantly.</p>
           </div>
-          <Link href="/services" className="subtle underline">All services →</Link>
+          <Link href="/services" className="subtle underline hidden sm:inline">All services →</Link>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {['Bridal Makeup', 'Special Occasion', 'Editorial', 'Lessons'].map((name) => (
-            <div key={name} className="card p-5">
-              <div className="font-medium">{name}</div>
-              <p className="subtle mt-1">Learn more & book</p>
-            </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {services.map(s => (
+            <Link
+              key={s.id}
+              href={`/booking?service=${s.id}`}
+              className="card p-4 sm:p-5 block transition hover:-translate-y-0.5"
+              aria-label={`Book ${s.name}`}
+            >
+              <div className="font-medium text-base sm:text-lg">{s.name}</div>
+              <p className="subtle mt-1">Duration: {s.durationMin} min</p>
+              <p className="mt-2 text-sm">
+                <span className="text-ink/70">Deposit: </span>
+                <strong>£{(s.depositPence/100).toFixed(2)}</strong>
+              </p>
+              <span className="subtle inline-block mt-3 underline">Book now</span>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-4 sm:mt-6">
+          <Link href="/services" className="subtle underline sm:hidden">All services →</Link>
+        </div>
+      </section>
+
+      {/* About section (anchor) */}
+      <section id="about" className="section scroll-mt-24">
+        <div className="grid gap-6 sm:grid-cols-[1.2fr_1fr] items-start">
+          <div>
+            <h2 className="h2 mb-2">About Emily</h2>
+            <p className="text-ink/80 mb-4">
+              Belfast-based makeup artist specialising in bridal, events and editorial.
+              Luxury yet approachable: modern glam that enhances your features and lasts all day.
+            </p>
+            <p className="text-ink/80">
+              Trained with Charlotte Tilbury (3 years in the Belfast team), experienced across weddings,
+              fashion shows and photoshoots. Lessons and masterclasses available.
+            </p>
+          </div>
+          <div className="card overflow-hidden">
+            <Image src="/images/about-portrait.jpg" alt="Emily portrait" width={90} height={110} className="w-full h-auto object-cover" />
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials (anchor) */}
+      <section id="testimonials" className="section scroll-mt-24">
+        <h2 className="h2 mb-4">What clients say</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            { q: 'Emily made me feel incredible on my wedding day — makeup lasted all night!', a: '— Sarah, bride' },
+            { q: 'Perfect soft glam for my formal. Photos looked amazing.', a: '— Aoife' },
+            { q: 'Professional, calm, and so talented. Booked again for our shoot.', a: '— Megan, photographer' },
+          ].map((t, i) => (
+            <blockquote key={i} className="card p-4">
+              <p className="text-ink/90">“{t.q}”</p>
+              <footer className="subtle mt-2">{t.a}</footer>
+            </blockquote>
           ))}
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="section">
-        <div className="card p-6 sm:p-10 text-center">
-          <h2 className="h2 mb-2">Ready to feel incredible?</h2>
-          <p className="subtle mb-6">Choose your service and secure your date with a small deposit.</p>
-          <Link className="btn btn-primary" href="/booking">Book your appointment</Link>
-        </div>
-      </section>
+      {/* Contact (anchor) */}
+      <ContactSection />
     </>
   )
 }
