@@ -1,10 +1,34 @@
 import './globals.css'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 
-export const metadata = {
-  title: { default: 'Emily — Makeup Artist Belfast', template: '%s | Emily MUA' },
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE),
+  title: {
+    default: 'Emily Gallagher — Makeup Artist',
+    template: '%s | Emily MUA',
+  },
   description:
-    'Luxury yet approachable makeup artist in Belfast for weddings, formals & editorials. Charlotte Tilbury–trained.',
+    'Luxury yet approachable makeup artist in Belfast. Weddings, formals & editorials. Charlotte Tilbury–trained.',
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    siteName: 'Emily MUA',
+    title: 'Emily — Makeup Artist Belfast',
+    description:
+      'Luxury yet approachable makeup artist in Belfast. Weddings, formals & editorials.',
+    images: [{ url: '/og.jpg', width: 1200, height: 630, alt: 'Emily MUA' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Emily — Makeup Artist Belfast',
+    description:
+      'Luxury yet approachable makeup artist in Belfast. Weddings, formals & editorials.',
+    images: ['/og.jpg'],
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
