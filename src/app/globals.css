@@ -29,3 +29,24 @@ body { @apply bg-ivory text-ink font-body; }
 @keyframes pulse-slow { 0%,100% { opacity:.25 } 50% { opacity:.6 } }
 .animate-pulse-slow { animation: pulse-slow 3.2s ease-in-out infinite; }
 
+/* Editorial helpers */
+.eyebrow { @apply uppercase tracking-[0.22em] text-[0.72rem] text-ink/60; }
+.rule    { @apply border-t border-ink/10; }
+.kicker  { @apply uppercase tracking-[0.14em] text-[0.8rem] text-ink/70; }
+
+
+.page       { @apply bg-ivory; }
+.page-body  { @apply container-xy py-8 sm:py-14; }
+.page-grid  { @apply grid lg:grid-cols-[1fr_auto_1fr] gap-8 lg:gap-12; }
+.page-rule  { @apply w-px bg-ink/10 rounded; }
+.page-head  { @apply font-display text-3xl sm:text-5xl tracking-tight; }
+.lead       { @apply text-ink/80 max-w-prose; }
+
+.field-label { @apply block text-sm text-ink/70 mb-1; }
+.input { @apply w-full rounded-[12px] border border-ink/15 bg-white px-3 py-2 outline-none focus:border-ink/35; }
+.textarea { @apply w-full rounded-[12px] border border-ink/15 bg-white p-3 outline-none focus:border-ink/35; }
+
+
+
+
+
