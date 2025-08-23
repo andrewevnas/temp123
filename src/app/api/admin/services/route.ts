@@ -4,20 +4,8 @@ import { requireAdmin } from '@/lib/admin-guard'
 
 export const runtime = 'nodejs'
 
-function paramFromPath(pathname: string, marker: string) {
-  const i = pathname.indexOf(`/${marker}/`)
-  if (i === -1) return null
-  const after = pathname.slice(i + marker.length + 2)
-  const seg = after.split('/')[0]
-  return seg ? decodeURIComponent(seg) : null
-}
-
 export async function POST(req: Request) {
   await requireAdmin()
-
-  const id = paramFromPath(new URL(req.url).pathname, 'services')
-  if (!id) return NextResponse.json({ error: 'Bad URL' }, { status: 400 })
-
   const form = await req.formData()
   const name = String(form.get('name') || '').trim()
   const durationMin = Number(form.get('durationMin'))
@@ -28,13 +16,19 @@ export async function POST(req: Request) {
   if (!Number.isFinite(durationMin) || durationMin <= 0) return NextResponse.json({ error: 'Invalid duration' }, { status: 400 })
   if (!Number.isFinite(depositPence) || depositPence < 0) return NextResponse.json({ error: 'Invalid deposit' }, { status: 400 })
 
+  // enforce a sensible min deposit if you want:
+  // if (depositPence < 50) return NextResponse.json({ error: 'Deposit too low' }, { status: 400 })
+
   try {
-    await prisma.service.update({
-      where: { id },
-      data: { name, durationMin, depositPence, active },
-    })
+    // Generate slug from name (simple example: lowercased, spaces replaced with dashes)
+    const slug = name.toLowerCase().replace(/\s+/g, '-')
+    // Use depositPence as basePricePence, or set a sensible default
+    const basePricePence = depositPence
+
+    await prisma.service.create({ data: { name, slug, durationMin, depositPence, basePricePence, active } })
   } catch {
-    return NextResponse.json({ error: 'Update failed (duplicate name?)' }, { status: 400 })
+    // handle unique name collisions
+    return NextResponse.json({ error: 'Service name must be unique' }, { status: 400 })
   }
 
   return NextResponse.redirect(new URL('/admin/services', req.url))

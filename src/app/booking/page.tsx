@@ -19,8 +19,21 @@ export default function BookingPage() {
   const [notes, setNotes] = useState('')
 
     useEffect(() => {
-    fetch('/api/services').then(r => r.json()).then(data => setServices(data.services as Service[]))
-  }, [])
+  (async () => {
+    try {
+      const r = await fetch('/api/services', { cache: 'no-store' })
+      if (!r.ok) {
+        const text = await r.text().catch(() => '')
+        throw new Error(`Failed to load services: ${r.status} ${text}`)
+      }
+      const data = await r.json()
+      setServices((data.services || []) as Service[])
+    } catch (e) {
+      console.error(e)
+      alert('Could not load services. Please try again later.')
+    }
+  })()
+}, [])
 
   async function loadSlots() {
     if (!serviceId || !date) return

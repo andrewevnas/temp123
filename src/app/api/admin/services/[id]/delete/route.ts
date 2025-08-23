@@ -15,9 +15,16 @@ function paramFromPath(pathname: string, marker: string) {
 export async function POST(req: Request) {
   await requireAdmin()
 
-  const id = paramFromPath(new URL(req.url).pathname, 'blackout')
+  const id = paramFromPath(new URL(req.url).pathname, 'services')
   if (!id) return NextResponse.json({ error: 'Bad URL' }, { status: 400 })
 
-  await prisma.blackoutDate.delete({ where: { id } })
-  return NextResponse.redirect(new URL('/admin/availability', req.url))
+  // Optional: block delete if there are future appointments using this service.
+  // const hasFuture = await prisma.appointment.findFirst({
+  //   where: { serviceId: id, startsAt: { gt: new Date() } },
+  //   select: { id: true },
+  // })
+  // if (hasFuture) return NextResponse.json({ error: 'Service has future appointments' }, { status: 400 })
+
+  await prisma.service.delete({ where: { id } })
+  return NextResponse.redirect(new URL('/admin/services', req.url))
 }

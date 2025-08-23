@@ -23,6 +23,8 @@ model Service {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([active, name])
 }
 
 model ServiceAddon {
@@ -38,18 +40,23 @@ model ServiceAddon {
 }
 
 model AvailabilityRule {
-  id        String @id @default(cuid())
-  weekday   Int // 0=Sun..6=Sat
+  id        String   @id @default(cuid())
+  weekday   Int // 0=Sun ... 6=Sat
   startTime String // "09:00"
   endTime   String // "17:00"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
-  @@unique([weekday, startTime, endTime])
+  @@unique([weekday])
 }
 
 model BlackoutDate {
-  id     String   @id @default(cuid())
-  date   DateTime // store UTC midnight for the date
-  reason String?
+  id        String   @id @default(cuid())
+  date      DateTime // store midnight UTC for the day
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@unique([date])
 }
 
 model Appointment {

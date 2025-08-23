@@ -11,10 +11,18 @@ export async function POST(req: Request) {
   const startTime = String(form.get('startTime') || '')
   const endTime = String(form.get('endTime') || '')
 
-  // Replace the old rule for that weekday
-  await prisma.availabilityRule.deleteMany({ where: { weekday } })
-  if (startTime && endTime) {
-    await prisma.availabilityRule.create({ data: { weekday, startTime, endTime } })
+  // Clear day if either input is blank
+  if (!startTime || !endTime) {
+    await prisma.availabilityRule.deleteMany({ where: { weekday } })
+    return NextResponse.redirect(new URL('/admin/availability', req.url))
   }
+
+  // Upsert single rule per weekday
+  await prisma.availabilityRule.upsert({
+    where: { weekday },
+    update: { startTime, endTime },
+    create: { weekday, startTime, endTime },
+  })
+
   return NextResponse.redirect(new URL('/admin/availability', req.url))
 }
