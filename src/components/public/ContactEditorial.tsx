@@ -71,7 +71,7 @@ export default function ContactEditorial() {
   }
 
   return (
-    <section id="contact" className="page scroll-mt-24">
+    <section id="contact" className="page scroll-mt-12">
       <div className="page-body">
         <div className="page-grid items-start lg:items-center">
           {/* LEFT: form */}
