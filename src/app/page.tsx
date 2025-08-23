@@ -114,7 +114,7 @@ export default async function HomePage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "BeautySalon",
-            name: "Emily — Makeup Artist Belfast",
+            name: "Emily Gallagher — Makeup Artist",
             url: SITE,
             image: `${SITE}/og.jpg`,
             address: {
