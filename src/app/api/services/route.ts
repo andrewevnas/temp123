@@ -1,19 +1,17 @@
-// src/app/api/services/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-
-export const runtime = 'nodejs' // Prisma must run on Node, not Edge
 
 export async function GET() {
   try {
     const services = await prisma.service.findMany({
       where: { active: true },
-      select: { id: true, name: true, durationMin: true, depositPence: true },
       orderBy: { name: 'asc' },
+      // keep the shape simple while we fix schema drift
+      select: { id: true, name: true, durationMin: true, depositPence: true },
     })
     return NextResponse.json({ services })
-  } catch (err) {
-    console.error('GET /api/services failed:', err)
-    return NextResponse.json({ services: [] }, { status: 500 })
+  } catch (e: unknown) {
+    console.error('GET /api/services failed:', (e instanceof Error ? e.message : String(e)))
+    return NextResponse.json({ services: [], error: 'services_failed' }, { status: 500 })
   }
 }

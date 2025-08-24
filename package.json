@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "postinstall": "prisma generate",
-    "start": "next start"
+    "start": "next start",
+    "vercel-build": "prisma migrate deploy && next build"
+    
+
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
