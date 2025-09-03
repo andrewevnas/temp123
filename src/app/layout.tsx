@@ -1,6 +1,7 @@
 import './globals.css'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import ErrorBoundary from '@/components/ui/ErrorBoundary'
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
@@ -35,9 +36,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="scroll-smooth">
       <body>
-        <SiteHeader />
-        <main>{children}</main>
-        <SiteFooter />
+        <ErrorBoundary>
+          <SiteHeader />
+          <main>{children}</main>
+          <SiteFooter />
+        </ErrorBoundary>
       </body>
     </html>
   )
